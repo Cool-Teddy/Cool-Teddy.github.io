@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>譚仔綠循｜4頁互動雛型（v5：綠色積分＋歷史記錄）</title>
+<style>
+:root{--primary:#17724F;--secondary:#4DAB7B;--accent:#F7B500;--bg:#F8FAF6;--text:#1C2B2D;--muted:#74807A}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,"PingFang HK","Noto Sans TC",sans-serif;color:var(--text)}
+.container{max-width:460px;margin:24px auto;padding:16px}
+.phone{background:#fff;border-radius:28px;border:1px solid #DCE1DC;box-shadow:0 10px 30px rgba(0,0,0,.06);overflow:hidden}
+.header{display:flex;gap:8px;align-items:center;padding:12px 16px;background:var(--bg)}
+.logo{background:#E0EEE6;color:var(--primary);padding:6px 10px;border-radius:10px;font-weight:800}
+.title{margin-left:auto;margin-right:auto;font-weight:700}
+.screen{display:none;padding:16px;min-height:560px;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card{background:#F1F6F2;border:1px solid #E1E8E2;border-radius:16px;padding:14px;margin:12px 10px;cursor:pointer}
+.card h3{margin:0 0 6px 0}
+.card p{margin:0;color:var(--muted)}
+.row{display:flex;gap:10px;margin:0 10px;flex-wrap:wrap}
+.row .card{flex:1 1 calc(50% - 10px);margin:0}
+.actions{display:flex;gap:8px;justify-content:space-between;margin:10px;flex-wrap:wrap}
+.input{width:100%;padding:10px;border-radius:8px;border:1px solid #DCE1DC;margin:8px 0}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:10px 12px;cursor:pointer}
+.btn.secondary{background:var(--secondary)}
+.btn.ghost{background:transparent;color:var(--primary);border:1px dashed var(--primary)}
+.tabbar{display:flex;gap:6px;background:var(--primary);padding:10px}
+.tabbar button{flex:1;background:rgba(0,0,0,.1);border:none;color:#fff;padding:10px;border-radius:10px;cursor:pointer}
+.tabbar button.active{background:rgba(0,0,0,.25)}
+.badge{display:inline-block;background:var(--secondary);color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;margin-left:6px}
+.badge.season{background:var(--accent)}
+.small{font-size:12px;color:var(--muted)}
+.reco{outline:2px dashed var(--secondary)}
+.table{width:100%;border-collapse:collapse;margin:8px 0}
+.table th,.table td{border-bottom:1px solid #E1E8E2;padding:6px 4px;text-align:left;font-size:12px}
+.kpi{display:flex;gap:10px;flex-wrap:wrap}
+.kpi .pill{background:#EEF6F0;border:1px solid #DCE1DC;border-radius:12px;padding:8px 10px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="phone">
+    <div class="header"><div class="logo">譚仔綠循</div><div id="title" class="title">登入</div></div>
+
+    <!-- P1 Login / Tools -->
+    <div id="p1" class="screen" style="display:block">
+      <div class="card"><h3>手機 / 電郵登入</h3><p>輸入後發送一次性驗證碼（OTP）</p><input id="idv" class="input" placeholder="e.g. +852 9xx xxxx / email"/></div>
+      <div class="card"><h3>說明</h3><p class="small">本版本已內建菜單，<b>無需上載 CSV</b>。完成點餐後，系統會計算本單綠色積分並寫入歷史，<b>每 20 分自動派優惠券</b>。</p></div>
+      <div class="actions">
+        <button class="btn" onclick="go('p2')">開始點餐</button>
+        <button class="btn secondary" onclick="downloadHabitsCSV()">下載習慣(CSV)</button>
+        <button class="btn secondary" onclick="downloadOrdersCSV()">下載歷史訂單(CSV)</button>
+        <button class="btn secondary" onclick="downloadPointsCSV()">下載積分歷史(CSV)</button>
+      </div>
+      <div class="row">
+        <div class="card" onclick="clearHabits()"><h3>清除習慣</h3><p class="small">重置學習檔</p></div>
+        <div class="card" onclick="clearPoints()"><h3>清除積分</h3><p class="small">清空餘額/歷史/優惠券</p></div>
+        <div class="card" onclick="clearLog()"><h3>清除操作記錄</h3><p class="small">重置可用性測試</p></div>
+      </div>
+    </div>
+
+    <!-- P2 Noodle -->
+    <div id="p2" class="screen">
+      <div class="card"><h3>AI 推薦</h3><p id="reco">系統正根據季節與你的歷史偏好產生推薦</p></div>
+      <div id="noodleList" class="row"></div>
+      <div class="actions"><button class="btn" onclick="go('p3')">下一步：配料</button></div>
+    </div>
+
+    <!-- P3 Toppings (蛋白 → 肉類；豆腐在蔬菜) -->
+    <div id="p3" class="screen">
+      <div class="card"><h3>AI 建議</h3><p id="aiTip">依據你的歷史偏好與季節提供建議</p></div>
+      <h4 style="margin:8px 12px">肉類</h4>
+      <div id="proteinList" class="row"></div>
+      <h4 style="margin:8px 12px">蔬菜</h4>
+      <div id="vegList" class="row"></div>
+      <h4 style="margin:8px 12px">湯底</h4>
+      <div id="soupList" class="row"></div>
+      <h4 style="margin:8px 12px">份量</h4>
+      <div class="row">
+        <div class="card" id="portionStd" onclick="setPortion('標準')"><h3>標準</h3><p>避免剩食</p></div>
+        <div class="card" id="portionLarge" onclick="setPortion('加大')"><h3>加大</h3><p>若常吃不完，將提示改回標準</p></div>
+      </div>
+      <div class="actions"><button class="btn" onclick="go('p4')">完成並查看積分</button></div>
+    </div>
+
+    <!-- P4 Points / History / Coupons -->
+    <div id="p4" class="screen">
+      <div class="card">
+        <h3>綠色積分</h3>
+        <div id="pointsSummary" class="kpi" style="margin-top:6px"></div>
+        <p id="pointsTips" class="small" style="margin-top:6px"></p>
+        <div class="actions" style="justify-content:flex-start">
+          <button class="btn secondary" onclick="downloadPointsCSV()">下載積分歷史(CSV)</button>
+          <button id="redeemBtn" class="btn ghost" onclick="redeemOneCoupon()" style="display:none">使用 1 張優惠券</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>最近 10 筆積分紀錄</h3>
+        <table class="table" id="pointsTable"><thead><tr><th>時間</th><th>本單</th><th>餘額</th><th>累積</th><th>發券</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div class="card">
+        <h3>我的優惠券</h3>
+        <div id="couponList" class="small">尚無可用優惠券</div>
+      </div>
+
+      <div class="row">
+        <div class="card" onclick="downloadLog()"><h3>下載操作記錄</h3><p class="small">CSV：時間、事件、頁面、項目、類別、是否低碳</p></div>
+        <div class="card" onclick="restart()"><h3>返回登入</h3><p class="small">重新體驗</p></div>
+      </div>
+
+      <div class="card"><h3>規則</h3><p>每選 1 項低碳 +1；同餐上限 +5；<b>累積滿 20 → 自動派 1 張優惠券</b>；拆單不計分</p></div>
+    </div>
+
+    <div class="tabbar">
+      <button id="t1" class="active" onclick="go('p1')">登入</button>
+      <button id="t2" onclick="go('p2')">麵類</button>
+      <button id="t3" onclick="go('p3')">配料</button>
+      <button id="t4" onclick="go('p4')">積分</button>
+    </div>
+  </div>
+</div>
+<script>
+// --- Built-in menu ---
+const BUILTIN_MENU = [{"id": 1, "name": "米線（清湯）", "category": "noodle", "is_low_carbon": true, "season_tag": "summer", "relative_carbon_score": 0.3, "notes": "清爽、夏季時令"}, {"id": 2, "name": "河粉", "category": "noodle", "is_low_carbon": false, "season_tag": "none", "relative_carbon_score": 0.6, "notes": "口感軟滑"}, {"id": 3, "name": "烏冬", "category": "noodle", "is_low_carbon": false, "season_tag": "winter", "relative_carbon_score": 0.7, "notes": "飽足暖胃"}, {"id": 4, "name": "米粉", "category": "noodle", "is_low_carbon": true, "season_tag": "none", "relative_carbon_score": 0.35, "notes": "輕盈口感"}, {"id": 10, "name": "雞胸", "category": "protein", "is_low_carbon": true, "season_tag": "none", "relative_carbon_score": 0.35, "notes": "較低碳替代"}, {"id": 11, "name": "肥牛", "category": "protein", "is_low_carbon": false, "season_tag": "none", "relative_carbon_score": 0.8, "notes": "高碳，建議替代"}, {"id": 12, "name": "豬頸肉", "category": "protein", "is_low_carbon": false, "season_tag": "none", "relative_carbon_score": 0.65, "notes": "口感彈牙"}, {"id": 13, "name": "豆腐", "category": "vegetable", "is_low_carbon": true, "season_tag": "none", "relative_carbon_score": 0.25, "notes": "植物蛋白，亦可作素食主配"}, {"id": 20, "name": "時令蔬菜", "category": "vegetable", "is_low_carbon": true, "season_tag": "summer", "relative_carbon_score": 0.2, "notes": "供應充足 → 減廚餘"}, {"id": 21, "name": "芽菜", "category": "vegetable", "is_low_carbon": true, "season_tag": "none", "relative_carbon_score": 0.25, "notes": "爽脆口感"}, {"id": 22, "name": "蘿蔔", "category": "vegetable", "is_low_carbon": true, "season_tag": "winter", "relative_carbon_score": 0.22, "notes": "冬季當造"}, {"id": 30, "name": "清湯", "category": "soup", "is_low_carbon": true, "season_tag": "summer", "relative_carbon_score": 0.25, "notes": "炎熱天氣更適合"}, {"id": 31, "name": "麻辣", "category": "soup", "is_low_carbon": false, "season_tag": "winter", "relative_carbon_score": 0.9, "notes": "香辣提味，寒冷時暖胃"}];
+
+// --- Storage keys ---
+const LOGKEY='tamjai_log';
+const ORDERS_KEY='tamjai_orders';
+const PROFILE_KEY='tamjai_habits_profile';
+const POINTS_KEY='tamjai_points';
+
+// --- State ---
+let MENU = BUILTIN_MENU; let selectedNoodle=null; let portion='標準';
+let selected={protein:new Set(), vegetable:new Set(), soup:new Set()};
+let orderSaved=false;
+
+// --- Utils ---
+function seasonByMonth(m){return (m>=3&&m<=5)?'spring':(m>=6&&m<=8)?'summer':(m>=9&&m<=11)?'autumn':'winter';}
+function badgeSpan(text,cls=''){return `<span class="badge ${cls}">${text}</span>`}
+function log(evt,extra={}){const arr=JSON.parse(localStorage.getItem(LOGKEY)||'[]');arr.push({time:new Date().toISOString(),page:document.getElementById('title').textContent,event:evt,...extra});localStorage.setItem(LOGKEY,JSON.stringify(arr));}
+function clearLog(){localStorage.removeItem(LOGKEY);alert('已清除操作記錄');}
+function downloadLog(){const arr=JSON.parse(localStorage.getItem(LOGKEY)||'[]');let csv='time,page,event,item,category,is_low_carbon\n';arr.forEach(x=>{csv+=`${x.time},${x.page},${x.event},${x.item||''},${x.category||''},${x.is_low_carbon??''}\n`});const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='usability_log.csv';a.click();}
+
+// --- Habits (unchanged) ---
+function getOrders(){return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]');}
+function saveOrders(arr){localStorage.setItem(ORDERS_KEY,JSON.stringify(arr));}
+function computeProfile(){const orders=getOrders().slice(-20); const count=(m,k)=>m[k]=(m[k]||0)+1; const nm={},pm={},sm={}; let lcSum=0,itemsSum=0,large=0; orders.forEach(o=>{if(o.noodle)count(nm,o.noodle); (o.proteins||[]).forEach(x=>count(pm,x)); (o.soups||[]).forEach(x=>count(sm,x)); lcSum+=o.low_carbon_count||0; itemsSum+=o.total_items||0; if(o.portion==='加大') large++;}); const fav=m=>Object.entries(m).sort((a,b)=>b[1]-a[1])[0]?.[0]||null; const profile={total_orders:orders.length,favorite_noodle:fav(nm),top_proteins:Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]),top_soups:Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,1).map(x=>x[0]),low_carbon_rate:itemsSum?(lcSum/itemsSum):0,portion_large_rate:orders.length?(large/orders.length):0,updated_at:new Date().toISOString()}; localStorage.setItem(PROFILE_KEY,JSON.stringify(profile)); return profile; }
+function getProfile(){const p=localStorage.getItem(PROFILE_KEY); return p? JSON.parse(p): computeProfile();}
+function downloadHabitsCSV(){const p=getProfile(); const headers=['total_orders','favorite_noodle','top_proteins','top_soups','low_carbon_rate','portion_large_rate','updated_at']; const row=[p.total_orders, p.favorite_noodle||'', (p.top_proteins||[]).join(';'), (p.top_soups||[]).join(';'), p.low_carbon_rate, p.portion_large_rate, p.updated_at]; let csv=headers.join(',')+'\n'+row.join(','); const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='habit_profile.csv'; a.click();}
+function downloadOrdersCSV(){const orders=getOrders(); if(orders.length===0){alert('目前沒有歷史訂單'); return;} const headers=['timestamp','noodle','proteins','vegetables','soups','portion','low_carbon_count','total_items']; let csv=headers.join(',')+'\n'; orders.forEach(o=>{csv+=`${o.timestamp||''},${o.noodle||''},"${(o.proteins||[]).join(';')}","${(o.vegetables||[]).join(';')}","${(o.soups||[]).join(';')}",${o.portion||''},${o.low_carbon_count||0},${o.total_items||0}\n`;}); const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='orders_history.csv'; a.click();}
+
+// --- Points system ---
+function getPoints(){
+  const p = JSON.parse(localStorage.getItem(POINTS_KEY)||'null');
+  if(p) return p;
+  const init={balance:0,lifetime:0,history:[],coupons:[]};
+  localStorage.setItem(POINTS_KEY, JSON.stringify(init));
+  return init;
+}
+function savePoints(p){localStorage.setItem(POINTS_KEY, JSON.stringify(p));}
+function clearPoints(){localStorage.removeItem(POINTS_KEY); alert('已清除積分與優惠券');}
+
+function awardPoints(orderPts, meta){
+  const p = getPoints();
+  const beforeBal = p.balance;
+  const beforeLife = p.lifetime;
+  p.balance += orderPts;
+  p.lifetime += orderPts;
+  let issued = 0;
+  while(p.balance >= 20){
+    p.balance -= 20; issued++;
+    p.coupons.push({id:'C'+Date.now()+Math.random().toString(16).slice(2,6), status:'issued', issued_at:new Date().toISOString()});
+  }
+  const entry = {time:new Date().toISOString(), order_pts:orderPts, balance_after:p.balance, lifetime_after:p.lifetime, issued:issued, meta:meta||{}};
+  p.history.push(entry); if(p.history.length>200) p.history.shift();
+  savePoints(p);
+  return entry;
+}
+
+function downloadPointsCSV(){
+  const p=getPoints();
+  let csv='time,order_pts,balance_after,lifetime_after,issued,noodle,proteins,vegetables,soups\n';
+  p.history.forEach(h=>{
+    const m=h.meta||{};
+    csv+=`${h.time},${h.order_pts},${h.balance_after},${h.lifetime_after},${h.issued},"${(m.noodle||'')}","${(m.proteins||[]).join(';')}","${(m.vegetables||[]).join(';')}","${(m.soups||[]).join(';')}"\n`;
+  });
+  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='points_history.csv'; a.click();
+}
+
+function redeemOneCoupon(){
+  const p=getPoints();
+  const idx=p.coupons.findIndex(c=>c.status==='issued');
+  if(idx<0){alert('目前沒有可用優惠券'); return;}
+  p.coupons[idx].status='redeemed'; p.coupons[idx].redeemed_at=new Date().toISOString();
+  savePoints(p); renderPointsArea(); alert('已使用 1 張優惠券');
+}
+
+// --- Router ---
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.style.display='none');document.getElementById(id).style.display='block';document.getElementById('title').textContent={p1:'登入',p2:'選擇麵類',p3:'選擇配料',p4:'綠色積分'}[id];document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active'));document.getElementById('t'+id.slice(1)).classList.add('active');if(id==='p2'){renderNoodles();} if(id==='p3'){renderToppings();} if(id==='p4'){finalizeOrder(); renderPointsArea();} log('nav:'+id)}
+
+function buildIndex(){const idx={}; MENU.forEach(o=>idx[o.name]=o); return idx;}
+
+// --- Render Noodles ---
+function renderNoodles(){const list=document.getElementById('noodleList'); list.innerHTML=''; const m=MENU.filter(x=>x.category==='noodle'); if(m.length===0){list.innerHTML='<div class="card"><h3>內建菜單遺失</h3></div>'; return;} const curSeason=seasonByMonth(new Date().getMonth()+1); const prof=getProfile(); const scored=m.map(x=>({x,score:(x.is_low_carbon?1:0)+(x.season_tag===curSeason?0.5:0)-(x.relative_carbon_score||0)+(prof.favorite_noodle===x.name?0.4:0)})).sort((a,b)=>b.score-a.score).map(o=>o.x); const reco=scored[0]; let reason=`季節：${curSeason}`; if(reco.is_low_carbon) reason+='｜低碳'; if(prof.favorite_noodle===reco.name) reason+='｜符合你的常點'; document.getElementById('reco').innerHTML=`推薦：${reco.name}${reco.is_low_carbon?badgeSpan('低碳'):''}${reco.season_tag===curSeason?badgeSpan('時令','season'):''}<br><span class='small'>原因：${reason}</span>`; scored.forEach(item=>{const card=document.createElement('div'); card.className='card'; if(item===reco) card.classList.add('reco'); card.innerHTML=`<h3>${item.name}${item.is_low_carbon?badgeSpan('低碳'):''}${item.season_tag===curSeason?badgeSpan('時令','season'):''}</h3><p class='small'>相對碳指標：${item.relative_carbon_score||'-'} ${item.notes?('｜'+item.notes):''}</p>`; card.onclick=()=>{if(selectedNoodle && selectedNoodle.name===item.name){selectedNoodle=null; card.style.outline='none';} else {selectedNoodle=item; [...list.children].forEach(c=>c.style.outline='none'); card.style.outline='2px solid var(--primary)';} log('select_noodle',{item:item.name,category:'noodle',is_low_carbon:item.is_low_carbon});}; list.appendChild(card);}); }
+
+// --- Render Toppings ---
+function renderToppings(){const prof=getProfile(); const tips=[]; if(prof.portion_large_rate>0.5) tips.push('你常選加大，建議改為「標準份」以減少剩食'); if(prof.low_carbon_rate<0.4) tips.push('多選擇 \uD83C\uDF3F 低碳選項可更快集分與減碳'); if(prof.top_soups?.[0]) tips.push('你常點「'+prof.top_soups[0]+'」，若天氣炎熱，建議清湯更清爽'); document.getElementById('aiTip').textContent = (tips.length? tips.join('。') : '今日時令食材供應充足，建議多加蔬菜'); renderCategory('protein','proteinList', new Set(prof.top_proteins||[])); renderCategory('vegetable','vegList', new Set()); renderCategory('soup','soupList', new Set(prof.top_soups||[])); document.getElementById('portionStd').style.outline = (prof.portion_large_rate>0.5)?'2px solid var(--secondary)':'none'; }
+
+function renderCategory(cat,containerId,fav){const list=document.getElementById(containerId); list.innerHTML=''; const curSeason=seasonByMonth(new Date().getMonth()+1); MENU.filter(x=>x.category===cat).forEach(item=>{const card=document.createElement('div'); card.className='card'; if(fav && fav.has(item.name)) card.classList.add('reco'); card.innerHTML=`<h3>${item.name}${item.is_low_carbon?badgeSpan('低碳'):''}${item.season_tag===curSeason?badgeSpan('時令','season'):''}</h3><p class='small'>${item.notes||''}</p>`; let sel=false; card.onclick=()=>{sel=!sel; card.style.outline=sel?'2px solid var(--primary)':'none'; if(sel) selected[cat].add(item.name); else selected[cat].delete(item.name); log('select_item',{item:item.name,category:cat,is_low_carbon:item.is_low_carbon});}; list.appendChild(card);}); }
+
+function setPortion(p){portion=p; if(p==='加大'){document.getElementById('aiTip').textContent='你曾出現剩食紀錄，建議改為「標準份」'; log('portion_large');} else {log('portion_standard');}}
+
+// --- Finalize order & award points ---
+function finalizeOrder(){
+  if(orderSaved){renderPointsArea(); return;}
+  const idx = buildIndex();
+  let lc=0, total=0;
+  const order={ timestamp:new Date().toISOString(), portion, noodle:selectedNoodle?selectedNoodle.name:null,
+    proteins:[...selected.protein], vegetables:[...selected.vegetable], soups:[...selected.soup] };
+  function countLC(name){if(!name) return; const it=idx[name]; if(it){ total++; if(it.is_low_carbon) lc++; }}
+  countLC(order.noodle); order.proteins.forEach(countLC); order.vegetables.forEach(countLC); order.soups.forEach(countLC);
+  order.low_carbon_count=lc; order.total_items=total;
+
+  // Save order
+  const orders=getOrders(); orders.push(order); if(orders.length>200) orders.shift(); saveOrders(orders);
+  computeProfile(); // refresh profile after new order
+
+  // Award points (cap 5 per-order)
+  const orderPts = Math.max(0, Math.min(5, lc));
+  const entry = awardPoints(orderPts, {noodle:order.noodle, proteins:order.proteins, vegetables:order.vegetables, soups:order.soups});
+  orderSaved=true; log('calc_points',{item:orderPts+''});
+}
+
+// --- Render points summary, table & coupons ---
+function renderPointsArea(){
+  const p=getPoints();
+  const summary=document.getElementById('pointsSummary');
+  summary.innerHTML='';
+  const last = p.history[p.history.length-1];
+  const orderPts = last? last.order_pts: 0;
+  const need = Math.max(0, 20 - p.balance);
+  const pills=[`本單 +${orderPts} 分`,`目前餘額 ${p.balance}/20`,`終身累積 ${p.lifetime} 分`,`可用券 ${p.coupons.filter(c=>c.status==='issued').length} 張`];
+  pills.forEach(t=>{const span=document.createElement('div'); span.className='pill'; span.textContent=t; summary.appendChild(span);});
+  document.getElementById('pointsTips').textContent = need===0? '已達門檻，系統已派發優惠券！' : `再累積 ${need} 分即可獲得 1 張優惠券。`;
+
+  // Table
+  const tbody=document.querySelector('#pointsTable tbody'); tbody.innerHTML='';
+  p.history.slice(-10).reverse().forEach(h=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${new Date(h.time).toLocaleString()}</td><td>${h.order_pts}</td><td>${h.balance_after}</td><td>${h.lifetime_after}</td><td>${h.issued>0? '是（'+h.issued+'）':'-'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Coupons
+  const list=document.getElementById('couponList');
+  const issued=p.coupons.filter(c=>c.status==='issued');
+  const redeemed=p.coupons.filter(c=>c.status==='redeemed');
+  let html='';
+  if(issued.length===0 && redeemed.length===0){ html='尚無紀錄'; }
+  if(issued.length>0){ html += `<div>可用：${issued.length} 張</div>`; issued.forEach(c=>{html+=`<div class='small'>#${c.id}｜發放：${new Date(c.issued_at).toLocaleString()}</div>`}); }
+  if(redeemed.length>0){ html += `<div style='margin-top:6px'>已用：${redeemed.length} 張</div>`; redeemed.forEach(c=>{html+=`<div class='small'>#${c.id}｜發放：${new Date(c.issued_at).toLocaleString()}｜使用：${new Date(c.redeemed_at).toLocaleString()}</div>`}); }
+  list.innerHTML = html;
+
+  // Redeem button
+  document.getElementById('redeemBtn').style.display = issued.length>0? 'inline-block':'none';
+}
+
+// --- Init ---
+function restart(){orderSaved=false; selectedNoodle=null; portion='標準'; selected={protein:new Set(),vegetable:new Set(),soup:new Set()}; go('p1');}
+</script>
+</body>
+</html>
