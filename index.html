@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="I_MainTitle" class="C_div1 C_div3 C_div4">
+            <img src="Images/CoolTeddyLogo.png">
+            <b class="C_text1">
+                CoolTeddy's Project Hub
+            </b>
+            <button id="I_ColorModeButton" class="C_button1 C_button2" type="button" onclick="F_ChangeColorMode()"/>
+        </div>
+        <div id="I_MainPage" class="C_div1 C_div3 C_div4 C_div5">
+            Apps
+        </div>
+        <div id="I_AppPage" class="C_div1 C_div3 C_div4 C_div5">
+            <button class="C_button1 C_button2" type="button" onclick="F_redirect('I_AppPage','I_MainPage')">
+                go back
+            </button>
+            <a id="I_AppSourceCodeLink">
+                source code
+            </a>
+            <iframe id="I_AppFrame" width="100%" height="600px">
+                The App
+            </iframe>
+        </div>
+        <a href="https://github.com/Cool-Teddy/Cool-Teddy.github.io/">
+            source code for this website
+        </a>
+    </body>
+    <script src="script.js"></script>
+</html>
